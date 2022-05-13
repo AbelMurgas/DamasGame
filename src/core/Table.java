@@ -5,20 +5,20 @@ import java.util.Arrays;
 public class Table {
 	/* Model :
 	 A B C D E F G H 
-	a[][][][][][][][]
+	a[][][1][][][][][]
 	b[][][][][][][][]
-	c[][][][][][][][]
+	c[1][][][][1][][][]
 	d[][][][][][][][]
 	e[][][][][][][][]
-	f[][][][][][][][] 
-	g[][][][][][][][]   
+	f[][][-1][][][][][] 
+	g[-1][][][][][][][]   
 	h[][][][][][][][]
 	*/
 	private int[][] structure = 
 		{
-			{1,0,1,0,1,0,1,0},
 			{0,1,0,1,0,1,0,1},
 			{1,0,1,0,1,0,1,0},
+			{0,1,0,1,0,1,0,1},
 			{0,0,0,0,0,0,0,0},
 			{0,0,0,0,0,0,0,0},
 			{-1,0,-1,0,-1,0,-1,0},
@@ -32,17 +32,23 @@ public class Table {
 	private int fromCoordNumberY;
 	private int toCoordNumberX;
 	private int toCoordNumberY;
-	void checkMovement(String fromCoordString, String toCoordString) {
+	private int AllowXmovment;
+
+	public void checkMovement(String fromCoordString, String toCoordString) {
 		String fromCoordNumber = stringToNumberCoords(fromCoordString);
 		String toCoordNumber = stringToNumberCoords(toCoordString);
 		this.fromCoordNumberX = Integer.parseInt(fromCoordNumber.substring(0,1));
 		this.fromCoordNumberY = Integer.parseInt(fromCoordNumber.substring(1,2));
 		this.toCoordNumberX = Integer.parseInt(toCoordNumber.substring(0,1));
 		this.toCoordNumberY = Integer.parseInt(toCoordNumber.substring(1,2));
-		this.currentPieceMoveExist = checkPieceInTable();
+		this.currentPieceMoveExist = checkPieceInTable(this.currentPlayer,this.fromCoordNumberX,this.fromCoordNumberY);
 		if (this.currentPieceMoveExist){
 			this.isCurrentPieceMaster = checkCurrentPieceMaster(fromCoordNumber);
-			checkIsEatMovement(toCoordNumber);
+			if (!checkMovementAllow()){
+				System.out.println("Movement not allow");
+			}else{
+				System.out.println("Movement allow");
+			}
 		}
 	}
 	private String stringToNumberCoords(String coordString) {
@@ -94,13 +100,13 @@ public class Table {
 		}
 		return  coordsNumber;
 	}
-	private boolean checkPieceInTable(){
+	private boolean checkPieceInTable(int player, int CoordNumberX ,int CoordNumberY){
 		/**
 		 * check if the piece exist in the table (of the current player)
 		 * @param fromNumber the piece that want to check
 		 * @return True or false if the piece exist 
 		 */
-		if (this.structure[this.fromCoordNumberY][this.fromCoordNumberX] != this.currentPlayer) {
+		if (this.structure[CoordNumberY][CoordNumberX] != player) {
 			System.out.println("not this piece does not exits ");
 			return false;
 		}
@@ -119,17 +125,48 @@ public class Table {
 		}
 		return true;
 	}
-	private boolean checkIsEatMovement(String toNumber){
+	private boolean checkMovementAllow(){
 		/**
-		 * check if is a allow movement:
-		 * @param toNumber the position that want to do
-		 * @return True or false if the piece exist 
+		 * check if the movement is an allow movement based on the move type and if the piece is master piece
+		 * @return True or false if the movement is available
 		 */
-		return true;
-	}
-	private boolean checkIsEatAllowMovement(String toCoodNumber){
+		int diferentCoordsY = this.toCoordNumberY - this.fromCoordNumberY;
+		if (this.currentPlayer == 1){
+			if (diferentCoordsY == 1 && (this.toCoordNumberX == this.fromCoordNumberX+1 || this.toCoordNumberX == this.fromCoordNumberX-1)){
+				if (this.toCoordNumberX == this.fromCoordNumberX+1 && checkPieceInTable(0,this.fromCoordNumberX+1,fromCoordNumberY+1)){
+					return true;
+				}else if ((this.toCoordNumberX == this.fromCoordNumberX-1 && checkPieceInTable(0,this.fromCoordNumberX-1,fromCoordNumberY+1))){
+					return true;
+				}else{
+					return false;
+				}
+			}else if (diferentCoordsY == 2 && (this.toCoordNumberX == this.fromCoordNumberX+2 || this.toCoordNumberX == this.fromCoordNumberX-2)){
+				if ((this.toCoordNumberX == this.fromCoordNumberX+2) && 
+						checkPieceInTable(this.currentPlayer*-1,this.fromCoordNumberX+1,fromCoordNumberY+1) ||
+					(this.toCoordNumberX == this.fromCoordNumberX-2 && 
+						checkPieceInTable(this.currentPlayer*-1,this.fromCoordNumberX-1,fromCoordNumberY+1))){
+					System.out.println("aqui toy");
+					return  true; // Case when move 2 square and validate eat the enemy
+				}
+				else return false;
+			}		
+			else{
+				return false;
+			}
+		}else {
+			if (diferentCoordsY == -1 && (this.toCoordNumberX == this.fromCoordNumberX+1 || this.toCoordNumberX == this.fromCoordNumberX-1)){
+				return true; // Case when only move 1 square
+			}else if (diferentCoordsY == -2 && (this.toCoordNumberX == this.fromCoordNumberX+2 || this.toCoordNumberX == this.fromCoordNumberX-2)){
+				if ((this.toCoordNumberX == this.fromCoordNumberX+2) && 
+						checkPieceInTable(this.currentPlayer*-1,this.fromCoordNumberX+1,fromCoordNumberY-1) ||
+					(this.toCoordNumberX == this.fromCoordNumberX-2 && 
+						checkPieceInTable(this.currentPlayer*-1,this.fromCoordNumberX-1,fromCoordNumberY-1))){
+					return  true; // Case when move 2 square and validate eat the enemy
+				}
+			}
+		}
+		
 
-	
 		return true;
 	}
 	public void makeMovement(String toCoodNumeber){
