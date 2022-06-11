@@ -35,13 +35,23 @@ public class Main {
 	}
 	public static void main(String[] args) {
 		Table tb = new Table();
-		showTable(tb);
 		Scanner sc = new Scanner(System.in);
+		do {
+		showTable(tb);
+		System.out.println("Turno del jugador: " + tb.getCurrentPlayer());
 		System.out.printf("input the from move: ");
 		String from = sc.nextLine();
 		System.out.printf("input the to move: ");
 		String to = sc.nextLine();
 		tb.checkMovement(from, to);
+		if (tb.getCurrentMovementAllow()){
+			tb.makeMovement();
+		}else{
+			System.out.println("Movement not allow");
+		}
+		} while (!tb.checkGameFinish());
+		sc.close();
 	}
+
 
 }
